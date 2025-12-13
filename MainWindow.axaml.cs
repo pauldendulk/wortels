@@ -113,6 +113,9 @@ public partial class MainWindow : Window
         _cancellationTokenSource?.Cancel();
         StartStopButton.Content = "Start";
         
+        // Clear the countdown indicator
+        CountdownTextBlock.Text = "";
+        
         // Re-enable the input fields
         LanguageComboBox.IsEnabled = true;
         AnswerTimeTextBox.IsEnabled = true;
@@ -131,10 +134,13 @@ public partial class MainWindow : Window
                 int intervalSeconds = GetIntervalSeconds();
                 SetVoiceForLanguage();
                 
-                // Wait for the interval before the next question cycle
-                await Task.Delay(TimeSpan.FromSeconds(intervalSeconds), cancellationToken);
+                // Display countdown and wait for the interval before the next question cycle
+                await CountdownAsync(intervalSeconds, true, cancellationToken);
             }
         }
+        
+        // Clear countdown when stopped
+        await Dispatcher.UIThread.InvokeAsync(() => CountdownTextBlock.Text = "");
     }
 
     private async Task AskQuestionCycleAsync(CancellationToken cancellationToken)
@@ -169,8 +175,8 @@ public partial class MainWindow : Window
             
             if (cancellationToken.IsCancellationRequested) return;
             
-            // Phase 4: Wait for the answer time
-            await Task.Delay(TimeSpan.FromSeconds(secondsToAnswer), cancellationToken);
+            // Phase 4: Wait for the answer time with countdown
+            await CountdownAsync(secondsToAnswer, false, cancellationToken);
             
             if (cancellationToken.IsCancellationRequested) return;
             
@@ -229,6 +235,33 @@ public partial class MainWindow : Window
         {
             Console.WriteLine($"Speech error: {ex.Message}");
         }
+    }
+    
+    private async Task CountdownAsync(int seconds, bool isNextQuestion, CancellationToken cancellationToken)
+    {
+        for (int i = seconds; i > 0; i--)
+        {
+            if (cancellationToken.IsCancellationRequested) break;
+            
+            // Update UI on the UI thread with different text based on context
+            await Dispatcher.UIThread.InvokeAsync(() => 
+            {
+                if (isNextQuestion)
+                {
+                    CountdownTextBlock.Text = $"Next question in {i} second{(i != 1 ? "s" : "")}";
+                }
+                else
+                {
+                    CountdownTextBlock.Text = $"{i} second{(i != 1 ? "s" : "")} remaining";
+                }
+            });
+            
+            // Wait 1 second
+            await Task.Delay(1000, cancellationToken);
+        }
+        
+        // Clear the countdown text
+        await Dispatcher.UIThread.InvokeAsync(() => CountdownTextBlock.Text = "");
     }
     
     private int GetAnswerTimeSeconds()
