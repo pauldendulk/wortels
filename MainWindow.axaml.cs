@@ -25,6 +25,7 @@ public partial class MainWindow : Window
     private readonly Random _random;
     private bool _isRunning = false;
     private CancellationTokenSource? _cancellationTokenSource;
+    private ILanguageTexts _currentTexts;
 
     public MainWindow()
     {
@@ -47,9 +48,15 @@ public partial class MainWindow : Window
         // Ensure the UI reflects the Dutch default so it doesn't switch back to English on start
         LanguageComboBox.SelectedIndex = 1;
         
+        // Initialize current texts to Dutch
+        _currentTexts = new DutchTexts();
+        
         // Initialize UI with default constants
         AnswerTimeTextBox.Text = DEFAULT_SECONDS_TO_ANSWER.ToString();
         IntervalTextBox.Text = DEFAULT_INTERVAL_SECONDS.ToString();
+        
+        // Update UI with current language
+        UpdateUILanguage();
     }
 
     private void StartStopButton_Click(object? sender, RoutedEventArgs e)
@@ -62,6 +69,35 @@ public partial class MainWindow : Window
         {
             StartTraining();
         }
+    }
+    
+    private void LanguageComboBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        // Ignore events during initialization before controls are ready
+        if (LanguageComboBox == null)
+        {
+            return;
+        }
+        
+        if (_isRunning)
+        {
+            // Don't allow language change while training is running
+            return;
+        }
+        
+        _currentTexts = IsEnglish ? new EnglishTexts() : new DutchTexts();
+        UpdateUILanguage();
+    }
+    
+    private void UpdateUILanguage()
+    {
+        Title = _currentTexts.WindowTitle;
+        TitleTextBlock.Text = _currentTexts.WindowTitle;
+        SubtitleTextBlock.Text = _currentTexts.WindowSubtitle;
+        LanguageLabelTextBlock.Text = _currentTexts.LanguageLabel;
+        AnswerTimeLabelTextBlock.Text = _currentTexts.AnswerTimeLabel;
+        IntervalTimeLabelTextBlock.Text = _currentTexts.IntervalTimeLabel;
+        StartStopButton.Content = _isRunning ? _currentTexts.StopButton : _currentTexts.StartButton;
     }
 
     private bool IsEnglish => LanguageComboBox.SelectedIndex == 0;
@@ -94,7 +130,7 @@ public partial class MainWindow : Window
     private void StartTraining()
     {
         _isRunning = true;
-        StartStopButton.Content = "Stop";
+        StartStopButton.Content = _currentTexts.StopButton;
         
         // Disable the input fields while running
         LanguageComboBox.IsEnabled = false;
@@ -111,7 +147,7 @@ public partial class MainWindow : Window
     {
         _isRunning = false;
         _cancellationTokenSource?.Cancel();
-        StartStopButton.Content = "Start";
+        StartStopButton.Content = _currentTexts.StartButton;
         
         // Clear the countdown indicator
         CountdownTextBlock.Text = "";
@@ -154,12 +190,9 @@ public partial class MainWindow : Window
             int number = _random.Next(1, 21);
             int square = number * number;
             
-            // Select language texts
-            ILanguageTexts texts = IsEnglish ? new EnglishTexts() : new DutchTexts();
-            
             // Phase 1: Ask the question
             SetVoiceForLanguage();
-            string question = string.Format(texts.Question, square);
+            string question = string.Format(_currentTexts.Question, square);
             await SpeakTextAsync(question, cancellationToken);
             
             if (cancellationToken.IsCancellationRequested) return;
@@ -170,7 +203,7 @@ public partial class MainWindow : Window
             if (cancellationToken.IsCancellationRequested) return;
             
             // Phase 3: Tell how much time they have
-            string timeAnnouncement = string.Format(texts.TimeAnnouncement, secondsToAnswer);
+            string timeAnnouncement = string.Format(_currentTexts.TimeAnnouncement, secondsToAnswer);
             await SpeakTextAsync(timeAnnouncement, cancellationToken);
             
             if (cancellationToken.IsCancellationRequested) return;
@@ -181,7 +214,7 @@ public partial class MainWindow : Window
             if (cancellationToken.IsCancellationRequested) return;
             
             // Phase 5: Give the answer
-            string answer = string.Format(texts.Answer, square, number);
+            string answer = string.Format(_currentTexts.Answer, square, number);
             await SpeakTextAsync(answer, cancellationToken);
         }
         catch (TaskCanceledException)
@@ -246,13 +279,14 @@ public partial class MainWindow : Window
             // Update UI on the UI thread with different text based on context
             await Dispatcher.UIThread.InvokeAsync(() => 
             {
+                string secondWord = i != 1 ? _currentTexts.Seconds : _currentTexts.Second;
                 if (isNextQuestion)
                 {
-                    CountdownTextBlock.Text = $"Next question in {i} second{(i != 1 ? "s" : "")}";
+                    CountdownTextBlock.Text = string.Format(_currentTexts.CountdownNextQuestion, i, secondWord);
                 }
                 else
                 {
-                    CountdownTextBlock.Text = $"{i} second{(i != 1 ? "s" : "")} remaining";
+                    CountdownTextBlock.Text = string.Format(_currentTexts.CountdownRemaining, i, secondWord);
                 }
             });
             
