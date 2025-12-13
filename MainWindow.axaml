@@ -2,18 +2,61 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="MathTrainer.MainWindow"
         Title="Square Root Trainer"
-        Width="400"
-        Height="200"
+        Width="450"
+        Height="300"
         WindowStartupLocation="CenterScreen">
     
-    <Grid>
+    <StackPanel Margin="20" Spacing="15">
+        <TextBlock Text="Square Root Trainer" 
+                   FontSize="24" 
+                   FontWeight="Bold"
+                   HorizontalAlignment="Center"
+                   Margin="0,0,0,20"/>
+        
+        <Grid ColumnDefinitions="*, 100" RowDefinitions="Auto,Auto,Auto,Auto" 
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center">
+            
+            <TextBlock Grid.Row="0" Grid.Column="0" 
+                       Text="Language:" 
+                       VerticalAlignment="Center"
+                       Margin="0,0,10,0"/>
+            <ComboBox Grid.Row="0" Grid.Column="1" 
+                      Name="LanguageComboBox"
+                      SelectedIndex="1"
+                      HorizontalAlignment="Stretch">
+                <ComboBoxItem Content="English"/>
+                <ComboBoxItem Content="Dutch"/>
+            </ComboBox>
+            
+            <TextBlock Grid.Row="1" Grid.Column="0" 
+                       Text="Time to answer (seconds):" 
+                       VerticalAlignment="Center"
+                       Margin="0,10,10,0"/>
+            <TextBox Grid.Row="1" Grid.Column="1" 
+                     Name="AnswerTimeTextBox"
+                     Text="10"
+                     Margin="0,10,0,0"
+                     HorizontalAlignment="Stretch"/>
+            
+            <TextBlock Grid.Row="2" Grid.Column="0" 
+                       Text="Time between questions (seconds):" 
+                       VerticalAlignment="Center"
+                       Margin="0,10,10,0"/>
+            <TextBox Grid.Row="2" Grid.Column="1" 
+                     Name="IntervalTextBox"
+                     Text="5"
+                     Margin="0,10,0,0"
+                     HorizontalAlignment="Stretch"/>
+        </Grid>
+        
         <Button Name="StartStopButton"
                 Content="Start"
-                FontSize="24"
+                FontSize="20"
                 HorizontalAlignment="Center"
-                VerticalAlignment="Center"
                 Width="200"
-                Height="80"
+                Height="60"
+                Margin="0,20,0,0"
                 Click="StartStopButton_Click" />
-    </Grid>
+    </StackPanel>
 </Window>
