@@ -6,6 +6,7 @@
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,5 +14,16 @@
     <PackageReference Include="Avalonia.Desktop" Version="11.2.2" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.2" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="11.2.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="audio\**\*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Exclude AudioGenerator source files from the main project -->
+    <Compile Remove="AudioGenerator\**" />
+    <EmbeddedResource Remove="AudioGenerator\**" />
+    <None Remove="AudioGenerator\**" />
   </ItemGroup>
 </Project>

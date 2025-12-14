@@ -4,6 +4,7 @@ using Avalonia.Threading;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -11,7 +12,7 @@ using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Media.Core;
 using Windows.Media.Playback;
-using Windows.Media.SpeechSynthesis;
+using Windows.Storage;
 
 namespace SquareRootTrainer;
 
@@ -20,7 +21,6 @@ public class LanguageOption
 {
     public required string DisplayName { get; init; }
     public required string LanguageCode { get; init; }
-    public required VoiceInformation Voice { get; init; }
     
     public override string ToString() => DisplayName;
 }
@@ -41,24 +41,27 @@ public partial class MainWindow : Window
     private const int BRIEF_PAUSE_MS = 1000; // Brief pause after asking question (in milliseconds)
     private const int DEFAULT_LOWEST_NUMBER = 4; // Default lowest number for square roots
     private const int DEFAULT_HIGHEST_NUMBER = 20; // Default highest number for square roots
+    private const int MAX_SUPPORTED_NUMBER = 20; // Maximum number supported by audio files
     
-    private readonly SpeechSynthesizer _synthesizer;
     private readonly MediaPlayer _mediaPlayer;
     private readonly Random _random;
     private bool _isRunning = false;
     private CancellationTokenSource? _cancellationTokenSource;
     private ILanguageTexts _currentTexts;
     private List<LanguageOption> _availableLanguages = new();
+    private string _audioBasePath = "";
 
     public MainWindow()
     {
         InitializeComponent();
 
-        _synthesizer = new SpeechSynthesizer();
         _mediaPlayer = new MediaPlayer();
         _random = new Random();
 
-        // Populate available languages from installed voices
+        // Set audio base path
+        _audioBasePath = Path.Combine(AppContext.BaseDirectory, "audio");
+        
+        // Populate available languages from audio folders
         PopulateAvailableLanguages();
         
         // Initialize current texts to Dutch or fallback to English
@@ -67,7 +70,6 @@ public partial class MainWindow : Window
         
         if (defaultLanguage != null)
         {
-            _synthesizer.Voice = defaultLanguage.Voice;
             _currentTexts = defaultLanguage.LanguageCode.StartsWith("nl") ? new DutchTexts() : new EnglishTexts();
         }
         else
@@ -87,15 +89,19 @@ public partial class MainWindow : Window
     
     private void PopulateAvailableLanguages()
     {
-        // Get all unique languages from installed voices
-        var languageGroups = SpeechSynthesizer.AllVoices
-            .GroupBy(v => v.Language)
-            .OrderBy(g => g.Key);
-        
-        foreach (var group in languageGroups)
+        // Check if audio directory exists
+        if (!Directory.Exists(_audioBasePath))
         {
-            var voice = group.First(); // Use the first voice for each language
-            var languageCode = voice.Language;
+            Console.WriteLine($"Warning: Audio directory not found at {_audioBasePath}");
+            return;
+        }
+
+        // Get all language folders
+        var languageDirs = Directory.GetDirectories(_audioBasePath);
+        
+        foreach (var langDir in languageDirs)
+        {
+            var languageCode = Path.GetFileName(langDir);
             
             // Try to get a friendly display name
             string displayName;
@@ -107,14 +113,13 @@ public partial class MainWindow : Window
             catch
             {
                 // Fallback if culture info is not available
-                displayName = $"{voice.DisplayName} ({languageCode})";
+                displayName = languageCode;
             }
             
             _availableLanguages.Add(new LanguageOption
             {
                 DisplayName = displayName,
-                LanguageCode = languageCode,
-                Voice = voice
+                LanguageCode = languageCode
             });
             
             Console.WriteLine($"Available: {displayName}");
@@ -155,7 +160,6 @@ public partial class MainWindow : Window
         }
         
         var selectedLanguage = (LanguageOption)LanguageComboBox.SelectedItem;
-        _synthesizer.Voice = selectedLanguage.Voice;
         
         // Determine which text set to use based on language code
         // Support for nl-* for Dutch, en-* for English, fallback to English for others
@@ -260,11 +264,13 @@ public partial class MainWindow : Window
             
             // Generate a random number within the configured range
             int number = _random.Next(lowestNumber, highestNumber + 1);
-            int square = number * number;
+            
+            // Get selected language
+            var selectedLanguage = (LanguageOption?)LanguageComboBox.SelectedItem;
+            if (selectedLanguage == null) return;
             
             // Phase 1: Ask the question
-            string question = string.Format(_currentTexts.Question, square);
-            await SpeakTextAsync(question, cancellationToken);
+            await PlayAudioFileAsync($"question_{number}.wav", selectedLanguage.LanguageCode, cancellationToken);
             
             if (cancellationToken.IsCancellationRequested) return;
             
@@ -273,9 +279,8 @@ public partial class MainWindow : Window
             
             if (cancellationToken.IsCancellationRequested) return;
             
-            // Phase 3: Tell how much time they have
-            string timeAnnouncement = string.Format(_currentTexts.TimeAnnouncement, secondsToAnswer);
-            await SpeakTextAsync(timeAnnouncement, cancellationToken);
+            // Phase 3: Announcement
+            await PlayAudioFileAsync("announcement.wav", selectedLanguage.LanguageCode, cancellationToken);
             
             if (cancellationToken.IsCancellationRequested) return;
             
@@ -285,8 +290,7 @@ public partial class MainWindow : Window
             if (cancellationToken.IsCancellationRequested) return;
             
             // Phase 5: Give the answer
-            string answer = string.Format(_currentTexts.Answer, square, number);
-            await SpeakTextAsync(answer, cancellationToken);
+            await PlayAudioFileAsync($"answer_{number}.wav", selectedLanguage.LanguageCode, cancellationToken);
         }
         catch (TaskCanceledException)
         {
@@ -302,14 +306,21 @@ public partial class MainWindow : Window
         }
     }
 
-    private async Task SpeakTextAsync(string text, CancellationToken cancellationToken)
+    private async Task PlayAudioFileAsync(string fileName, string languageCode, CancellationToken cancellationToken)
     {
         if (cancellationToken.IsCancellationRequested) return;
 
         try
         {
-            // Generate the audio stream from text
-            using var stream = await _synthesizer.SynthesizeTextToStreamAsync(text);
+            var audioPath = Path.Combine(_audioBasePath, languageCode, fileName);
+            
+            if (!File.Exists(audioPath))
+            {
+                Console.WriteLine($"Warning: Audio file not found: {audioPath}");
+                return;
+            }
+            
+            var file = await StorageFile.GetFileFromPathAsync(audioPath);
             
             var tcs = new TaskCompletionSource();
             
@@ -319,7 +330,7 @@ public partial class MainWindow : Window
             try
             {
                 _mediaPlayer.MediaEnded += onEnded;
-                _mediaPlayer.Source = MediaSource.CreateFromStream(stream, stream.ContentType);
+                _mediaPlayer.Source = MediaSource.CreateFromStorageFile(file);
                 _mediaPlayer.Play();
                 
                 // Wait for playback to finish or cancellation
@@ -337,7 +348,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Speech error: {ex.Message}");
+            Console.WriteLine($"Audio playback error: {ex.Message}");
         }
     }
     
@@ -391,6 +402,12 @@ public partial class MainWindow : Window
     {
         if (int.TryParse(LowestNumberTextBox.Text, out int number) && number > 0)
         {
+            // Clamp to supported range
+            if (number > MAX_SUPPORTED_NUMBER)
+            {
+                number = MAX_SUPPORTED_NUMBER;
+                LowestNumberTextBox.Text = number.ToString();
+            }
             return number;
         }
         return DEFAULT_LOWEST_NUMBER;
@@ -400,6 +417,13 @@ public partial class MainWindow : Window
     {
         if (int.TryParse(HighestNumberTextBox.Text, out int number) && number > 0)
         {
+            // Clamp to supported range
+            if (number > MAX_SUPPORTED_NUMBER)
+            {
+                number = MAX_SUPPORTED_NUMBER;
+                HighestNumberTextBox.Text = number.ToString();
+            }
+            
             var lowest = GetLowestNumber();
             // Ensure highest is at least equal to lowest
             return number >= lowest ? number : lowest;
@@ -413,7 +437,6 @@ public partial class MainWindow : Window
         
         // Ensure power management is restored when window closes
         SetThreadExecutionState(ES_CONTINUOUS);
-        _synthesizer.Dispose();
         _mediaPlayer.Dispose();
         base.OnClosed(e);
     }

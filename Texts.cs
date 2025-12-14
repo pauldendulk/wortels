@@ -4,7 +4,7 @@ public interface ILanguageTexts
 {
     // Speech texts
     string Question { get; }
-    string TimeAnnouncement { get; }
+    string Announcement { get; }
     string Answer { get; }
     
     // UI texts
@@ -27,7 +27,7 @@ public class EnglishTexts : ILanguageTexts
 {
     // Speech texts
     public string Question => "What is the square root of {0}?";
-    public string TimeAnnouncement => "The answer follows in {0} seconds.";
+    public string Announcement => "The answer follows shortly.";
     public string Answer => "The square root of {0} is {1}.";
     
     // UI texts
@@ -50,7 +50,7 @@ public class DutchTexts : ILanguageTexts
 {
     // Speech texts
     public string Question => "Wat is de wortel van {0}?";
-    public string TimeAnnouncement => "Het antwoord volgt over {0} seconden.";
+    public string Announcement => "Het antwoord volgt zodadelijk.";
     public string Answer => "De wortel van {0} is {1}.";
     
     // UI texts
