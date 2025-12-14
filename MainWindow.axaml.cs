@@ -42,6 +42,11 @@ public partial class MainWindow : Window
     private const int DEFAULT_LOWEST_NUMBER = 4; // Default lowest number for square roots
     private const int DEFAULT_HIGHEST_NUMBER = 20; // Default highest number for square roots
     private const int MAX_SUPPORTED_NUMBER = 20; // Maximum number supported by audio files
+    private const int MIN_SUPPORTED_NUMBER = 1; // Minimum number supported by audio files
+    
+    // UI Color constants
+    private const string ERROR_COLOR = "#DC2626"; // Warm red for errors
+    private const string NORMAL_COLOR = "#6366F1"; // Blue for normal countdown
     
     private readonly MediaPlayer _mediaPlayer;
     private readonly Random _random;
@@ -133,6 +138,60 @@ public partial class MainWindow : Window
         LanguageComboBox.SelectedIndex = dutchIndex >= 0 ? dutchIndex : 0;
     }
 
+    /// <summary>
+    /// Validates user inputs for lowest and highest numbers.
+    /// </summary>
+    /// <param name="errorMessage">The error message if validation fails.</param>
+    /// <returns>True if inputs are valid, false otherwise.</returns>
+    private bool ValidateInputs(out string? errorMessage)
+    {
+        errorMessage = null;
+        
+        bool lowestValid = int.TryParse(LowestNumberTextBox.Text, out int lowestNumber);
+        bool highestValid = int.TryParse(HighestNumberTextBox.Text, out int highestNumber);
+        
+        // Check if lowest < minimum supported
+        if (lowestValid && lowestNumber < MIN_SUPPORTED_NUMBER)
+        {
+            errorMessage = _currentTexts.ErrorMinTooLow;
+            return false;
+        }
+        
+        // Check if highest > maximum supported
+        if (highestValid && highestNumber > MAX_SUPPORTED_NUMBER)
+        {
+            errorMessage = _currentTexts.ErrorMaxTooHigh;
+            return false;
+        }
+        
+        // Check if min > max
+        if (lowestValid && highestValid && lowestNumber > highestNumber)
+        {
+            errorMessage = _currentTexts.ErrorMinMaxValidation;
+            return false;
+        }
+        
+        return true;
+    }
+    
+    /// <summary>
+    /// Displays a validation error message to the user.
+    /// </summary>
+    private void ShowValidationError(string message)
+    {
+        CountdownTextBlock.Text = message;
+        CountdownTextBlock.Foreground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse(ERROR_COLOR));
+    }
+    
+    /// <summary>
+    /// Clears any validation error message and resets the text color.
+    /// </summary>
+    private void ClearValidationError()
+    {
+        CountdownTextBlock.Text = "";
+        CountdownTextBlock.Foreground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse(NORMAL_COLOR));
+    }
+    
     private void StartStopButton_Click(object? sender, RoutedEventArgs e)
     {
         if (_isRunning)
@@ -190,41 +249,15 @@ public partial class MainWindow : Window
    
     private void StartTraining()
     {
-        // Validate raw input values before auto-correction happens
-        bool lowestValid = int.TryParse(LowestNumberTextBox.Text, out int lowestNumber);
-        bool highestValid = int.TryParse(HighestNumberTextBox.Text, out int highestNumber);
-        
-        Console.WriteLine($"Validation: lowest={lowestNumber} ({lowestValid}), highest={highestNumber} ({highestValid}), isInvalid={lowestNumber > highestNumber}");
-        
-        // Check if min > max
-        if (lowestValid && highestValid && lowestNumber > highestNumber)
+        // Validate inputs
+        if (!ValidateInputs(out string? errorMessage))
         {
-            // Show error message and don't start training
-            Console.WriteLine($"Setting error message: {_currentTexts.ErrorMinMaxValidation}");
-            CountdownTextBlock.Text = _currentTexts.ErrorMinMaxValidation;
-            CountdownTextBlock.Foreground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#DC2626"));
+            ShowValidationError(errorMessage!);
             return;
         }
         
-        // Check if lowest < 1
-        if (lowestValid && lowestNumber < 1)
-        {
-            CountdownTextBlock.Text = _currentTexts.ErrorMinTooLow;
-            CountdownTextBlock.Foreground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#DC2626"));
-            return;
-        }
-        
-        // Check if highest > 20
-        if (highestValid && highestNumber > MAX_SUPPORTED_NUMBER)
-        {
-            CountdownTextBlock.Text = _currentTexts.ErrorMaxTooHigh;
-            CountdownTextBlock.Foreground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#DC2626"));
-            return;
-        }
-        
-        // Clear error message and reset countdown text color
-        CountdownTextBlock.Text = "";
-        CountdownTextBlock.Foreground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#6366F1"));
+        // Clear any previous error and reset text color
+        ClearValidationError();
         
         _isRunning = true;
         StartStopButton.Content = _currentTexts.StopButton;
@@ -434,40 +467,28 @@ public partial class MainWindow : Window
         return DEFAULT_INTERVAL_SECONDS;
     }
     
+    /// <summary>
+    /// Gets the lowest number from the input field, with fallback to default.
+    /// Note: Validation should be done before calling this method.
+    /// </summary>
     private int GetLowestNumber()
     {
         if (int.TryParse(LowestNumberTextBox.Text, out int number))
         {
-            // Clamp to supported range (minimum 1, maximum 20)
-            if (number < 1)
-            {
-                number = 1;
-                LowestNumberTextBox.Text = number.ToString();
-            }
-            else if (number > MAX_SUPPORTED_NUMBER)
-            {
-                number = MAX_SUPPORTED_NUMBER;
-                LowestNumberTextBox.Text = number.ToString();
-            }
             return number;
         }
         return DEFAULT_LOWEST_NUMBER;
     }
     
+    /// <summary>
+    /// Gets the highest number from the input field, with fallback to default.
+    /// Note: Validation should be done before calling this method.
+    /// </summary>
     private int GetHighestNumber()
     {
-        if (int.TryParse(HighestNumberTextBox.Text, out int number) && number > 0)
+        if (int.TryParse(HighestNumberTextBox.Text, out int number))
         {
-            // Clamp to supported range
-            if (number > MAX_SUPPORTED_NUMBER)
-            {
-                number = MAX_SUPPORTED_NUMBER;
-                HighestNumberTextBox.Text = number.ToString();
-            }
-            
-            var lowest = GetLowestNumber();
-            // Ensure highest is at least equal to lowest
-            return number >= lowest ? number : lowest;
+            return number;
         }
         return DEFAULT_HIGHEST_NUMBER;
     }
