@@ -1,12 +1,12 @@
 # Square Root Trainer
 
-A Windows desktop application that helps you memorize square roots of numbers 1-20 through audio-based spaced repetition.
+A desktop application that helps you memorize square roots of numbers 1-20 through audio-based spaced repetition. Currently runs on Windows, with browser support planned.
 
 ![Square Root Trainer Application](docs/screenshot.png)
 
 ## What It Does
 
-Square Root Trainer uses text-to-speech to quiz you on square roots at regular intervals. The app speaks a question (like "What is the square root of 144?"), gives you time to think, and then tells you the answer. This hands-free approach lets you practice while doing other tasks.
+Square Root Trainer uses pre-generated audio files to quiz you on square roots at regular intervals. The app plays a question (like "What is the square root of 144?"), gives you time to think, and then tells you the answer. This hands-free approach lets you practice while doing other tasks.
 
 ## How to Use
 
@@ -27,7 +27,47 @@ The app randomly selects from square roots 1-20 (perfect squares 1-400), helping
 
 ## Installation
 
+### Running the Application
+
+From the repository root:
 ```powershell
-dotnet build SquareRootTrainer.csproj
-dotnet run --project SquareRootTrainer.csproj
+dotnet run --project SquareRootTrainer/SquareRootTrainer.csproj
 ```
+
+Or navigate to the project folder:
+```powershell
+cd SquareRootTrainer
+dotnet run
+```
+
+### Building
+
+```powershell
+dotnet build
+```
+
+## Technical Details
+
+### Audio Files
+
+The application uses pre-generated audio files for both English and Dutch. All audio files are located in:
+- `SquareRootTrainer/audio/en-US/` - English audio files
+- `SquareRootTrainer/audio/nl-NL/` - Dutch audio files
+
+### Generating Audio Files
+
+Audio files are generated using the AudioGenerator CLI tool, which uses Windows Speech Synthesis:
+
+```powershell
+cd AudioGenerator
+dotnet run
+```
+
+This will regenerate all audio files in both languages.
+
+### Architecture
+
+- **Cross-platform audio**: Uses NAudio for Windows desktop audio playback
+- **Platform abstraction**: `IAudioPlayer` interface allows for different implementations (Windows/Browser)
+- **Avalonia UI**: Cross-platform .NET UI framework
+- **Async/await patterns**: Clean cancellation and resource management
