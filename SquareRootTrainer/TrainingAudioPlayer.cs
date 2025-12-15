@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
 using NAudio.Wave;
@@ -9,6 +10,7 @@ namespace SquareRootTrainer;
 /// <summary>
 /// Manages audio playback for the training session using NAudio.
 /// </summary>
+[SupportedOSPlatform("windows")]
 public class TrainingAudioPlayer : IAudioPlayer
 {
     private readonly string _audioBasePath;

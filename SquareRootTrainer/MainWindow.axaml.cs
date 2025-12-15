@@ -23,6 +23,7 @@ public class LanguageOption
 
 public partial class MainWindow : Window
 {
+#if WINDOWS
     // Windows API to prevent system sleep
     [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
     private static extern uint SetThreadExecutionState(uint esFlags);
@@ -31,6 +32,8 @@ public partial class MainWindow : Window
     private const uint ES_SYSTEM_REQUIRED = 0x00000001;
     private const uint ES_DISPLAY_REQUIRED = 0x00000002;
     private const uint ES_AWAYMODE_REQUIRED = 0x00000040;
+#endif
+    
     // Change these constants to adjust timing
     private const int DEFAULT_INTERVAL_SECONDS = 300; // Default time between question cycles
     private const int DEFAULT_SECONDS_TO_ANSWER = 3; // Default time given to answer the question
@@ -56,8 +59,8 @@ public partial class MainWindow : Window
         // Set audio base path
         _audioBasePath = Path.Combine(AppContext.BaseDirectory, "audio");
         
-        // Initialize audio player
-        _audioPlayer = new TrainingAudioPlayer(_audioBasePath);
+        // Initialize audio player (platform-specific)
+        _audioPlayer = CreateAudioPlayer(_audioBasePath);
         
         // Initialize training session with callbacks
         _trainingSession = new TrainingSession(
@@ -90,6 +93,15 @@ public partial class MainWindow : Window
         
         // Update UI with current language
         UpdateUILanguage();
+    }
+    
+    private static IAudioPlayer CreateAudioPlayer(string audioBasePath)
+    {
+#if BROWSER
+        return new BrowserAudioPlayer(audioBasePath);
+#else
+        return new TrainingAudioPlayer(audioBasePath);
+#endif
     }
     
     private void PopulateAvailableLanguages()
@@ -283,10 +295,12 @@ public partial class MainWindow : Window
         LowestNumberTextBox.IsEnabled = false;
         HighestNumberTextBox.IsEnabled = false;
         
+#if WINDOWS
         // Keep system awake for audio playback, but allow display to turn off (like Spotify)
         // ES_CONTINUOUS | ES_SYSTEM_REQUIRED keeps system awake
         // ES_AWAYMODE_REQUIRED allows display sleep while playing audio
         SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_AWAYMODE_REQUIRED);
+#endif
         
         // Start the training session
         _trainingSession.Start(config);
@@ -298,8 +312,10 @@ public partial class MainWindow : Window
         
         StartStopButton.Content = _currentTexts.StartButton;
         
+#if WINDOWS
         // Restore normal power management
         SetThreadExecutionState(ES_CONTINUOUS);
+#endif
         
         // Re-enable the input fields
         LanguageComboBox.IsEnabled = true;
@@ -394,8 +410,10 @@ public partial class MainWindow : Window
     {
         await _trainingSession.StopAsync();
         
+#if WINDOWS
         // Ensure power management is restored when window closes
         SetThreadExecutionState(ES_CONTINUOUS);
+#endif
         _audioPlayer.Dispose();
         base.OnClosed(e);
     }

@@ -27,17 +27,26 @@ The app randomly selects from square roots 1-20 (perfect squares 1-400), helping
 
 ## Installation
 
-### Running the Application
+### Running the Applications
 
-From the repository root:
+**SquareRootTrainer Desktop:**
 ```powershell
-dotnet run --project SquareRootTrainer/SquareRootTrainer.csproj
+dotnet run --project SquareRootTrainer\SquareRootTrainer.csproj --framework net9.0-windows10.0.19041.0
 ```
 
-Or navigate to the project folder:
+**SquareRootTrainer Browser:**
 ```powershell
-cd SquareRootTrainer
-dotnet run
+dotnet run --project SquareRootTrainer\SquareRootTrainer.csproj --framework net9.0-browser
+```
+
+**Carrots Desktop:**
+```powershell
+dotnet run --project Carrots\Carrots.Desktop\Carrots.Desktop.csproj
+```
+
+**Carrots Browser:**
+```powershell
+dotnet run --project Carrots\Carrots.Browser\Carrots.Browser.csproj
 ```
 
 ### Building

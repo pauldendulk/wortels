@@ -1,0 +1,179 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Carrots.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="700"
+             x:Class="Carrots.Views.MainView"
+             x:DataType="vm:MainViewModel"
+             Background="#F3F4F6">
+    <UserControl.Styles>
+        <!-- Label Style -->
+        <Style Selector="TextBlock.label">
+            <Setter Property="Foreground" Value="#374151"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+
+        <!-- Input Styles -->
+        <Style Selector="TextBox">
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Height" Value="35"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        
+        <Style Selector="ComboBox">
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Height" Value="35"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+
+        <!-- Primary Button Style -->
+        <Style Selector="Button.primary">
+            <Setter Property="Background" Value="#4F46E5"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.2"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        
+        <Style Selector="Button.primary:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#4338CA"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        
+        <Style Selector="Button.primary:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="#3730A3"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+    </UserControl.Styles>
+
+    <!-- Main Container -->
+    <Border Padding="40">
+        <!-- Card -->
+        <Border Background="White" 
+                CornerRadius="16" 
+                BoxShadow="0 4 15 0 #1A000000">
+            
+            <StackPanel Margin="30" Spacing="30" VerticalAlignment="Center">
+                
+                <!-- Header Section -->
+                <StackPanel Spacing="8">
+                    <TextBlock Text="{Binding WindowTitle}" 
+                               FontSize="28" 
+                               FontWeight="Bold" 
+                               Foreground="#111827"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="{Binding WindowSubtitle}" 
+                               FontSize="14" 
+                               Foreground="#6B7280"
+                               HorizontalAlignment="Center"
+                               TextWrapping="Wrap"
+                               TextAlignment="Center"
+                               MaxWidth="420"/>
+                </StackPanel>
+
+                <!-- Settings Form -->
+                <Grid ColumnDefinitions="Auto, *" 
+                      RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+                    
+                    <!-- Language Selection -->
+                    <TextBlock Grid.Row="0" Grid.Column="0" 
+                               Classes="label" 
+                               Text="{Binding LanguageLabel}" 
+                               Margin="0,0,20,20"/>
+                    <ComboBox Grid.Row="0" Grid.Column="1" 
+                              ItemsSource="{Binding AvailableLanguages}"
+                              SelectedItem="{Binding SelectedLanguage}"
+                              IsEnabled="{Binding CanEditSettings}"
+                              HorizontalAlignment="Stretch"
+                              Margin="0,0,0,20"/>
+                    
+                    <!-- Answer Time Input -->
+                    <TextBlock Grid.Row="1" Grid.Column="0" 
+                               Classes="label" 
+                               Text="{Binding AnswerTimeLabel}" 
+                               Margin="0,0,20,20"/>
+                    <TextBox Grid.Row="1" Grid.Column="1" 
+                             Text="{Binding AnswerTime}"
+                             IsEnabled="{Binding CanEditSettings}"
+                             Margin="0,0,0,20"/>
+                    
+                    <!-- Interval Input -->
+                    <TextBlock Grid.Row="2" Grid.Column="0" 
+                               Classes="label" 
+                               Text="{Binding IntervalTimeLabel}" 
+                               Margin="0,0,20,20"/>
+                    <TextBox Grid.Row="2" Grid.Column="1" 
+                             Text="{Binding IntervalTime}"
+                             IsEnabled="{Binding CanEditSettings}"
+                             Margin="0,0,0,20"/>
+                    
+                    <!-- Lowest Number Input -->
+                    <TextBlock Grid.Row="3" Grid.Column="0" 
+                               Classes="label" 
+                               Text="{Binding LowestNumberLabel}" 
+                               Margin="0,0,20,20"/>
+                    <TextBox Grid.Row="3" Grid.Column="1" 
+                             Text="{Binding LowestNumber}"
+                             IsEnabled="{Binding CanEditSettings}"
+                             Margin="0,0,0,20"/>
+                    
+                    <!-- Highest Number Input -->
+                    <TextBlock Grid.Row="4" Grid.Column="0" 
+                               Classes="label" 
+                               Text="{Binding HighestNumberLabel}" 
+                               Margin="0,0,20,0"/>
+                    <TextBox Grid.Row="4" Grid.Column="1" 
+                             Text="{Binding HighestNumber}"
+                             IsEnabled="{Binding CanEditSettings}"/>
+                </Grid>
+                
+                <!-- Error Message -->
+                <TextBlock Text="{Binding ErrorMessage}"
+                           Foreground="#DC2626"
+                           FontSize="14"
+                           FontWeight="Medium"
+                           HorizontalAlignment="Center"
+                           TextWrapping="Wrap"
+                           IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                
+                <!-- Countdown Indicator -->
+                <TextBlock Text="{Binding CountdownText}"
+                           FontSize="18"
+                           FontWeight="SemiBold"
+                           Foreground="{Binding CountdownColor}"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           MinHeight="30"
+                           Margin="0,0,0,0"/>
+                
+                <!-- Action Buttons -->
+                <StackPanel Spacing="10">
+                    <Button Classes="primary"
+                            Content="{Binding StartButtonText}"
+                            Command="{Binding StartTrainingCommand}"
+                            IsVisible="{Binding !IsTraining}"
+                            HorizontalAlignment="Stretch"
+                            Height="50"/>
+                    
+                    <Button Classes="primary"
+                            Content="{Binding StopButtonText}"
+                            Command="{Binding StopTrainingCommand}"
+                            IsVisible="{Binding IsTraining}"
+                            HorizontalAlignment="Stretch"
+                            Height="50"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </Border>
+</UserControl>

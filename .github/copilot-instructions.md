@@ -44,11 +44,32 @@ This is a desktop application built with:
 - Use meaningful variable and method names
 
 ## Testing & Verification
-- **After making changes, run the application** using `dotnet run` from the `SquareRootTrainer` project folder
+- **After making changes, run the application** using the commands below
 - Use `dotnet build` to check for compilation errors without showing the UI
 - **Always run tests if they exist** using `dotnet test`
 - Verify that the application compiles without errors before completing a task
 - Check for compiler warnings and address them when possible
+
+### Running Applications
+**SquareRootTrainer Desktop:**
+```powershell
+dotnet run --project SquareRootTrainer\SquareRootTrainer.csproj --framework net9.0-windows10.0.19041.0
+```
+
+**SquareRootTrainer Browser:**
+```powershell
+dotnet run --project SquareRootTrainer\SquareRootTrainer.csproj --framework net9.0-browser
+```
+
+**Carrots Desktop:**
+```powershell
+dotnet run --project Carrots\Carrots.Desktop\Carrots.Desktop.csproj
+```
+
+**Carrots Browser:**
+```powershell
+dotnet run --project Carrots\Carrots.Browser\Carrots.Browser.csproj
+```
 
 ## Decision Making
 - **If you are not sure what to do, please ask for clarification instead of just doing something and hoping for the best**
