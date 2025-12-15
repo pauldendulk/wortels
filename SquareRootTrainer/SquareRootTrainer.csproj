@@ -1,50 +1,24 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFrameworks>net9.0-windows10.0.19041.0;net9.0-browser</TargetFrameworks>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
     <Nullable>enable</Nullable>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-
-  <!-- Windows-specific properties -->
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net9.0-windows10.0.19041.0'">
-    <OutputType>WinExe</OutputType>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 
-  <!-- Browser-specific properties -->
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net9.0-browser'">
-    <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
-    <WasmMainJSPath>main.js</WasmMainJSPath>
-  </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.2.2" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.2.2" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.2" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="11.2.2" />
-  </ItemGroup>
-
-  <!-- Desktop-only packages -->
-  <ItemGroup Condition="'$(TargetFramework)' == 'net9.0-windows10.0.19041.0'">
-    <PackageReference Include="Avalonia.Desktop" Version="11.2.2" />
     <PackageReference Include="NAudio" Version="2.2.1" />
-  </ItemGroup>
-
-  <!-- Browser-only packages -->
-  <ItemGroup Condition="'$(TargetFramework)' == 'net9.0-browser'">
-    <PackageReference Include="Avalonia.Browser" Version="11.2.2" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="audio\**\*" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
-
-  <!-- Browser-specific assets - copy wwwroot to output -->
-  <ItemGroup Condition="'$(TargetFramework)' == 'net9.0-browser'">
-    <Content Include="wwwroot\**\*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
