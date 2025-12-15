@@ -5,6 +5,11 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
     <DefineConstants>$(DefineConstants);BROWSER</DefineConstants>
+
+    <!-- GitHub Pages does not send COOP/COEP headers required for SharedArrayBuffer.
+         Disable threads to avoid SkiaSharp initialization failures in production hosting. -->
+    <WasmEnableThreads>false</WasmEnableThreads>
+    <WasmEnableAOT>false</WasmEnableAOT>
   </PropertyGroup>
 
   <ItemGroup>
