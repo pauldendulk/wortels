@@ -8,6 +8,7 @@ internal sealed partial class Program
 {
     private static Task Main(string[] args) => BuildAvaloniaApp()
             .WithInterFont()
+            .UseSkia()
             .StartBrowserAppAsync("out");
 
     public static AppBuilder BuildAvaloniaApp()
