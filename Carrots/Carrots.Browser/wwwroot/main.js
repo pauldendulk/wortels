@@ -3,6 +3,21 @@ import { dotnet } from './_framework/dotnet.js'
 const is_browser = typeof window != "undefined";
 if (!is_browser) throw new Error(`Expected to be running in a browser`);
 
+globalThis.addEventListener('error', (e) => {
+    console.error('window error:', e.error ?? e.message ?? e);
+});
+
+globalThis.addEventListener('unhandledrejection', (e) => {
+    console.error('unhandled rejection:', e.reason ?? e);
+});
+
+console.log('boot info:', {
+    href: globalThis.location?.href,
+    baseURI: globalThis.document?.baseURI,
+    crossOriginIsolated: globalThis.crossOriginIsolated,
+    sharedArrayBuffer: typeof globalThis.SharedArrayBuffer,
+});
+
 // Audio playback functionality
 let currentAudio = null;
 
@@ -36,7 +51,7 @@ function stopAudio() {
 }
 
 const dotnetRuntime = await dotnet
-    .withDiagnosticTracing(false)
+    .withDiagnosticTracing(true)
     .withApplicationArgumentsFromQuery()
     .create();
 
@@ -47,4 +62,10 @@ console.log('Audio functions exported to globalThis');
 
 const config = dotnetRuntime.getConfig();
 
-await dotnetRuntime.runMain(config.mainAssemblyName, [globalThis.location.href]);
+try {
+    await dotnetRuntime.runMain(config.mainAssemblyName, [globalThis.location.href]);
+}
+catch (err) {
+    console.error('runMain failed:', err);
+    throw err;
+}
