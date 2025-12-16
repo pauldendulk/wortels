@@ -10,6 +10,7 @@
          Disable threads to avoid SkiaSharp initialization failures in production hosting. -->
     <WasmEnableThreads>false</WasmEnableThreads>
     <WasmEnableAOT>false</WasmEnableAOT>
+    <WasmEnableSIMD>true</WasmEnableSIMD>
   </PropertyGroup>
 
   <ItemGroup>

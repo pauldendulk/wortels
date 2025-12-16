@@ -34,6 +34,15 @@ jobs:
       - name: Publish
         run: dotnet publish Carrots/Carrots.Browser/Carrots.Browser.csproj -c Release -o publish
 
+      # GitHub Pages serves files as-is and does not set Content-Encoding headers for
+      # pre-compressed assets (*.br/*.gz). The dotnet WASM bootstrap may attempt to
+      # load these and fail at runtime. Publish still includes the uncompressed assets,
+      # so we remove the pre-compressed variants for reliable Pages hosting.
+      - name: Remove pre-compressed assets
+        run: |
+          find publish/wwwroot -type f -name '*.br' -delete
+          find publish/wwwroot -type f -name '*.gz' -delete
+
       - name: Disable Jekyll
         run: touch publish/wwwroot/.nojekyll
 
