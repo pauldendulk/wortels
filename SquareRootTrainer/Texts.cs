@@ -63,7 +63,7 @@ public class DutchTexts : ILanguageTexts
     public string WindowTitle => "Worteltrainer";
     public string WindowSubtitle => "Start de app en laat deze op de achtergrond draaien terwijl je de vragen in je hoofd beantwoordt wanneer ze gesteld worden.";
     public string LanguageLabel => "Taal";
-    public string AnswerTimeLabel => "Tijd om te antwoorden (s)";
+    public string AnswerTimeLabel => "Tijd voor antwoord (s)";
     public string IntervalTimeLabel => "Interval tijd (s)";
     public string LowestNumberLabel => "Laagste Getal";
     public string HighestNumberLabel => "Hoogste Getal";

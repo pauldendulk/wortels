@@ -63,7 +63,7 @@
                   HorizontalScrollBarVisibility="Disabled"
                   VerticalScrollBarVisibility="Auto">
         <!-- Main Container - Centered with Max Width -->
-        <Border Padding="40" MaxWidth="665" HorizontalAlignment="Center" VerticalAlignment="Top">
+        <Border Padding="20" MaxWidth="665" HorizontalAlignment="Center" VerticalAlignment="Top">
             <!-- Card -->
             <Border Background="White"
                     CornerRadius="16"
