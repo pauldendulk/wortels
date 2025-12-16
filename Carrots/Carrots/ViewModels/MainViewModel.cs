@@ -115,13 +115,13 @@ public partial class MainViewModel : ViewModelBase
         // Populate available languages from audio folders
         PopulateAvailableLanguages(audioBasePath);
         
-        // Initialize current texts to Dutch or fallback to English
-        var dutchLanguage = AvailableLanguages.FirstOrDefault(l => l.LanguageCode.StartsWith("nl"));
-        var defaultLanguage = dutchLanguage ?? AvailableLanguages.FirstOrDefault();
+        // Initialize current texts to English (default) or fallback to first available language
+        var englishLanguage = AvailableLanguages.FirstOrDefault(l => l.LanguageCode.StartsWith("en", StringComparison.OrdinalIgnoreCase));
+        var defaultLanguage = englishLanguage ?? AvailableLanguages.FirstOrDefault();
         
         if (defaultLanguage != null)
         {
-            _currentTexts = defaultLanguage.LanguageCode.StartsWith("nl") ? new DutchTexts() : new EnglishTexts();
+            _currentTexts = defaultLanguage.LanguageCode.StartsWith("nl", StringComparison.OrdinalIgnoreCase) ? new DutchTexts() : new EnglishTexts();
             SelectedLanguage = defaultLanguage;
         }
         else
