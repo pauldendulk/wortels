@@ -29,11 +29,10 @@
       <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
     </PackageReference>
     <PackageReference Include="CommunityToolkit.Mvvm" />
-    <PackageReference Include="NAudio" />
   </ItemGroup>
-  
-  <!-- NAudio is only needed when the shared project is referenced by Desktop -->
-  <ItemGroup Condition="'$(IsDesktopBuild)' == 'true'">
+
+  <!-- NAudio is only used by the desktop-only audio player (excluded from browser builds via #if !BROWSER). -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
     <PackageReference Include="NAudio" />
   </ItemGroup>
 </Project>

@@ -6,13 +6,9 @@ using Carrots;
 
 internal sealed partial class Program
 {
-        private static Task Main(string[] args) => BuildAvaloniaApp()
-            .WithInterFont()
-            .UseSkia()
-                        .StartBrowserAppAsync("out", new BrowserPlatformOptions
-                        {
-                                RenderingMode = new[] { BrowserRenderingMode.WebGL1 }
-                        });
+    private static Task Main(string[] args) => BuildAvaloniaApp()
+        .WithInterFont()
+        .StartBrowserAppAsync("out");
 
     public static AppBuilder BuildAvaloniaApp()
         => AppBuilder.Configure<App>();
